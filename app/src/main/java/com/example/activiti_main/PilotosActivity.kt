@@ -22,6 +22,8 @@ class PilotosActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_pilotos)
 
+        findViewById<android.view.View>(R.id.pilotosRoot).applyTopSystemBarPadding()
+
         txtEstado = findViewById(R.id.txtPilotosEstado)
         adapter = PilotosAdapter(onClick = ::abrirDetalle)
         findViewById<RecyclerView>(R.id.recyclerPilotos).apply {

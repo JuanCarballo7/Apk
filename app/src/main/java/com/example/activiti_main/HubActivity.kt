@@ -40,6 +40,8 @@ class HubActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_hub)
 
+        findViewById<View>(R.id.headerBar).applyTopSystemBarPadding()
+
         tabNews = findViewById(R.id.tabNews)
         tabVideos = findViewById(R.id.tabVideos)
         tabTablas = findViewById(R.id.tabTablas)
@@ -71,6 +73,9 @@ class HubActivity : AppCompatActivity() {
 
         findViewById<TextView>(R.id.txtTituloClasificacion).setOnClickListener {
             startActivity(Intent(this, PilotosActivity::class.java))
+        }
+        findViewById<View>(R.id.btnProfile).setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
         }
 
         tabNews.setOnClickListener { mostrarTab("news") }

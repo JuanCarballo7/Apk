@@ -35,6 +35,8 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
+        findViewById<View>(R.id.authHeader).applyTopSystemBarPadding()
+
         firstNameInput = findViewById(R.id.editFirstName)
         lastNameInput = findViewById(R.id.editLastName)
         emailInput = findViewById(R.id.editRegisterEmail)

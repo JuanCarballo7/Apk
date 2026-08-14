@@ -11,6 +11,8 @@ class DetallePilotoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detalle_piloto)
 
+        findViewById<android.view.View>(R.id.detalleRoot).applyTopSystemBarPadding()
+
         val imgPiloto = findViewById<ImageView>(R.id.imgDetallePiloto)
         val txtEquipo = findViewById<TextView>(R.id.txtEquipoDetalle)
         val txtNombre = findViewById<TextView>(R.id.txtNombreDetalle)

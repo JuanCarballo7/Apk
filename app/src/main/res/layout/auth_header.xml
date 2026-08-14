@@ -1,17 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/authHeader"
     android:layout_width="match_parent"
-    android:layout_height="64dp"
+    android:layout_height="wrap_content"
     android:gravity="center_vertical"
+    android:minHeight="64dp"
     android:orientation="horizontal"
-    android:paddingHorizontal="18dp">
+    android:paddingHorizontal="18dp"
+    android:paddingTop="10dp"
+    android:paddingBottom="6dp">
 
     <ImageView
-        android:layout_width="64dp"
+        android:layout_width="52dp"
         android:layout_height="48dp"
+        android:adjustViewBounds="true"
         android:contentDescription="@string/app_name"
-        android:scaleType="centerCrop"
-        android:src="@drawable/app_logo" />
+        android:scaleType="fitCenter"
+        android:src="@drawable/logo_ja" />
 
     <View
         android:layout_width="0dp"
@@ -31,8 +36,7 @@
         android:layout_marginStart="12dp"
         android:contentDescription="MotoGP"
         android:scaleType="fitCenter"
-        android:src="@drawable/logo_motogp"
-        android:tint="#FFFFFF" />
+        android:src="@drawable/logo_motogp" />
 
     <ImageView
         android:layout_width="38dp"

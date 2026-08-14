@@ -28,6 +28,8 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
+        findViewById<View>(R.id.authHeader).applyTopSystemBarPadding()
+
         emailInput = findViewById(R.id.editEmail)
         passwordInput = findViewById(R.id.editPassword)
         loginButton = findViewById(R.id.btnLogin)

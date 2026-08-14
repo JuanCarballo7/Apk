@@ -17,9 +17,11 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        findViewById<android.view.View>(R.id.headerBar).applyTopSystemBarPadding()
+
         comprobarAcceso()
-        findViewById<android.view.View>(R.id.btnLogout).setOnClickListener {
-            cerrarSesion()
+        findViewById<android.view.View>(R.id.btnProfile).setOnClickListener {
+            startActivity(Intent(this, ProfileActivity::class.java))
         }
 
         findViewById<TextView>(R.id.tabNews).setOnClickListener {
@@ -69,16 +71,6 @@ class MainActivity : AppCompatActivity() {
                     volverAlLogin()
                 }
             } catch (_: Exception) {
-                volverAlLogin()
-            }
-        }
-    }
-
-    private fun cerrarSesion() {
-        lifecycleScope.launch {
-            try {
-                SupabaseProvider.client.auth.signOut()
-            } finally {
                 volverAlLogin()
             }
         }
