@@ -249,7 +249,11 @@ class EntradasActivity : AppCompatActivity() {
                     "¡Compra confirmada!",
                     "Reservaste $cantidad ${if (cantidad == 1) "entrada" else "entradas"} para el GP de Argentina.\n\n" +
                         "Código de reserva: ${orden.codigo}\nTotal: ${formatearArs(orden.total)}",
-                    botonPrincipal = "LISTO"
+                    botonPrincipal = "VER COMPROBANTE",
+                    onPrincipal = {
+                        startActivity(ComprobanteActivity.intent(this@EntradasActivity, orden.id))
+                    },
+                    botonSecundario = "LISTO"
                 )
             } catch (error: Exception) {
                 AppDialog.error(

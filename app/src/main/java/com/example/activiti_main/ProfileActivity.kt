@@ -61,6 +61,9 @@ class ProfileActivity : AppCompatActivity() {
         passwordButton.setOnClickListener { cambiarContrasena() }
         logoutButton.setOnClickListener { confirmarCierreDeSesion() }
         adminButton.setOnClickListener { startActivity(Intent(this, AdminActivity::class.java)) }
+        findViewById<View>(R.id.btnMisEntradas).setOnClickListener {
+            startActivity(Intent(this, MisEntradasActivity::class.java))
+        }
 
         cargarPerfil()
     }

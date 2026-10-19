@@ -1,7 +1,10 @@
 package com.example.activiti_main.data
 
+import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.postgrest.query.Order
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -34,6 +37,27 @@ object EntradasRepository {
             }
         }
         return SupabaseProvider.client.postgrest.rpc("crear_orden", params).decodeAs<OrdenCreada>()
+    }
+
+    private val columnasOrden = Columns.raw(
+        "id, codigo, total, estado, created_at, order_items ( ticket_id, nombre, cantidad, precio_unitario )"
+    )
+
+    /** Una orden del usuario logueado (la RLS solo deja leer las propias). */
+    suspend fun getOrden(id: Long): OrdenApi =
+        SupabaseProvider.client.from("orders")
+            .select(columnasOrden) { filter { eq("id", id) } }
+            .decodeSingle<OrdenApi>()
+
+    /** Órdenes del usuario logueado, la más reciente primero. */
+    suspend fun getMisOrdenes(): List<OrdenApi> {
+        val userId = SupabaseProvider.client.auth.currentUserOrNull()?.id ?: return emptyList()
+        return SupabaseProvider.client.from("orders")
+            .select(columnasOrden) {
+                filter { eq("user_id", userId) }
+                order("created_at", Order.DESCENDING)
+            }
+            .decodeList<OrdenApi>()
     }
 
     fun TicketApi.toEntrada() = Entrada(

@@ -126,3 +126,23 @@ data class OrdenCreada(
     val codigo: String,
     val total: Double
 )
+
+@Serializable
+data class OrdenItemApi(
+    @SerialName("ticket_id") val ticketId: String,
+    val nombre: String,
+    val cantidad: Int,
+    @SerialName("precio_unitario") val precioUnitario: Double
+)
+
+@Serializable
+data class OrdenApi(
+    val id: Long,
+    val codigo: String,
+    val total: Double,
+    val estado: String = "confirmada",
+    @SerialName("created_at") val createdAt: String = "",
+    @SerialName("order_items") val items: List<OrdenItemApi> = emptyList()
+) {
+    val cantidadEntradas: Int get() = items.sumOf { it.cantidad }
+}
