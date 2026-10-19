@@ -29,3 +29,17 @@ object QrHelper {
         return Bitmap.createBitmap(pixeles, tamanoPx, tamanoPx, Bitmap.Config.ARGB_8888)
     }
 }
+
+/** Código y número de orden leídos de un QR del comprobante (o de un código tipeado a mano). */
+data class QrOrden(val codigo: String, val ordenId: Long?)
+
+/** Acepta "JA-GP26|GP26-123456|42" (QR del comprobante) o "GP26-123456" (tipeado). */
+fun leerQrOrden(texto: String): QrOrden? {
+    val limpio = texto.trim()
+    val partes = limpio.split("|")
+    if (partes.size == 3 && partes[0] == "JA-GP26") {
+        return QrOrden(partes[1].uppercase(), partes[2].toLongOrNull())
+    }
+    val codigo = limpio.uppercase()
+    return if (Regex("""GP26-\d{6}""").matches(codigo)) QrOrden(codigo, null) else null
+}

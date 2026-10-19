@@ -1,5 +1,6 @@
 package com.example.activiti_main
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -101,6 +102,12 @@ class AdminActivity : AppCompatActivity() {
                 findViewById<TextView>(R.id.txtAdminRol).text =
                     if (p.esSuperadmin) "PANEL SUPERADMIN" else "PANEL ADMIN"
                 tabs.getValue(Seccion.USUARIOS).visibility = if (p.esSuperadmin) View.VISIBLE else View.GONE
+                findViewById<View>(R.id.btnAdminValidarQr).apply {
+                    visibility = if (p.esSuperadmin) View.VISIBLE else View.GONE
+                    setOnClickListener {
+                        startActivity(Intent(this@AdminActivity, ValidarQrActivity::class.java))
+                    }
+                }
                 mostrarSeccion(Seccion.ENTRADAS)
             } catch (error: Exception) {
                 setCargando(false)

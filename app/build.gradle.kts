@@ -64,6 +64,7 @@ dependencies {
     implementation("io.ktor:ktor-client-android:3.2.2")
     implementation(libs.coil)
     implementation(libs.zxing.core)
+    implementation(libs.zxing.embedded)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)

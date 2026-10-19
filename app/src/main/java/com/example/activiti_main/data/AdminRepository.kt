@@ -63,6 +63,19 @@ object AdminRepository {
         return filas.firstOrNull() ?: throw SinPermisoException("actualizar noticia $id")
     }
 
+    // ---------- Control de ingreso (solo superadmin) ----------
+
+    /** Valida un QR en la base; con [registrar] también marca el ingreso (una sola vez por orden). */
+    suspend fun validarEntrada(codigo: String, ordenId: Long?, registrar: Boolean): ValidacionApi =
+        client.postgrest.rpc(
+            "validar_entrada",
+            buildJsonObject {
+                put("p_codigo", codigo)
+                put("p_orden_id", ordenId)
+                put("p_registrar", registrar)
+            }
+        ).decodeAs<ValidacionApi>()
+
     // ---------- Usuarios (solo superadmin) ----------
 
     suspend fun getUsuarios(): List<UsuarioAdmin> =

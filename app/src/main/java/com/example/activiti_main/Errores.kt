@@ -26,7 +26,14 @@ internal fun Throwable.registrar(accion: String) {
         is RestException -> "HTTP $statusCode · error=$error · descripcion=$description"
         else -> message.orEmpty()
     }
-    Log.e(TAG, "[$accion] ${this::class.java.name}: $detalle", this)
+    // El mensaje de RestException incluye los headers del request (token de sesión y apikey):
+    // se loguea solo el stack trace, nunca ese mensaje.
+    val traza = if (this is RestException) {
+        Throwable("${this::class.java.simpleName} (headers ocultos)").also { it.stackTrace = stackTrace }
+    } else {
+        this
+    }
+    Log.e(TAG, "[$accion] ${this::class.java.name}: $detalle", traza)
 }
 
 /** Traduce el error a un texto corto y sin jerga técnica. */

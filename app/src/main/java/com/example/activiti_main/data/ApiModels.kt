@@ -146,3 +146,21 @@ data class OrdenApi(
 ) {
     val cantidadEntradas: Int get() = items.sumOf { it.cantidad }
 }
+
+@Serializable
+data class ValidacionItem(val nombre: String, val cantidad: Int)
+
+/** Respuesta de la RPC validar_entrada (control de ingreso con QR). */
+@Serializable
+data class ValidacionApi(
+    val resultado: String,
+    val registrada: Boolean = false,
+    @SerialName("orden_id") val ordenId: Long? = null,
+    val codigo: String = "",
+    val total: Double = 0.0,
+    @SerialName("created_at") val createdAt: String? = null,
+    @SerialName("usada_at") val usadaAt: String? = null,
+    val comprador: String? = null,
+    val email: String? = null,
+    val items: List<ValidacionItem> = emptyList()
+)

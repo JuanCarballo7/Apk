@@ -15,6 +15,7 @@ ksp = "2.1.20-1.0.32"
 kotlin = "2.1.20"
 coil = "2.7.0"
 zxing = "3.5.3"
+zxingEmbedded = "4.3.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -32,6 +33,7 @@ androidx-room-compiler = { group = "androidx.room", name = "room-compiler", vers
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
 coil = { group = "io.coil-kt", name = "coil", version.ref = "coil" }
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+zxing-embedded = { group = "com.journeyapps", name = "zxing-android-embedded", version.ref = "zxingEmbedded" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -56,6 +56,15 @@
             android:name=".MisEntradasActivity"
             android:exported="false" />
         <activity
+            android:name=".ValidarQrActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <!-- Lector de QR de zxing-android-embedded: que siga la orientación del teléfono -->
+        <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:screenOrientation="fullSensor"
+            tools:replace="screenOrientation" />
+        <activity
             android:name=".DetallePilotoActivity"
             android:exported="false"
             android:screenOrientation="landscape"
