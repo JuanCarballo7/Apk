@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
@@ -27,6 +26,7 @@ class HubActivity : AppCompatActivity() {
     private lateinit var panelTablas: View
     private lateinit var panelPlaceholder: View
     private lateinit var txtPlaceholder: TextView
+    private lateinit var txtSubtituloClasificacion: TextView
 
     private lateinit var imgFeatured: ImageView
     private lateinit var txtFeaturedBadge: TextView
@@ -51,6 +51,7 @@ class HubActivity : AppCompatActivity() {
         panelTablas = findViewById(R.id.panelTablas)
         panelPlaceholder = findViewById(R.id.panelPlaceholder)
         txtPlaceholder = findViewById(R.id.txtPlaceholder)
+        txtSubtituloClasificacion = findViewById(R.id.txtSubtituloClasificacion)
 
         imgFeatured = findViewById(R.id.imgFeaturedNews)
         txtFeaturedBadge = findViewById(R.id.txtFeaturedBadge)
@@ -74,6 +75,11 @@ class HubActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.txtTituloClasificacion).setOnClickListener {
             startActivity(Intent(this, PilotosActivity::class.java))
         }
+        val abrirEntradas = View.OnClickListener {
+            startActivity(Intent(this, EntradasActivity::class.java))
+        }
+        findViewById<View>(R.id.bloqueEvento).setOnClickListener(abrirEntradas)
+        findViewById<View>(R.id.btnEntradas).setOnClickListener(abrirEntradas)
         findViewById<View>(R.id.btnProfile).setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
@@ -98,13 +104,11 @@ class HubActivity : AppCompatActivity() {
                 clasificacionAdapter.submitList(
                     if (standings.isNotEmpty()) standings else rankingFallback()
                 )
-            } catch (e: Exception) {
+            } catch (error: Exception) {
+                error.registrar("Cargar clasificación (se muestran datos de referencia)")
                 clasificacionAdapter.submitList(rankingFallback())
-                Toast.makeText(
-                    this@HubActivity,
-                    "Clasificación local (API no disponible)",
-                    Toast.LENGTH_SHORT
-                ).show()
+                txtSubtituloClasificacion.text =
+                    "No pudimos actualizar la tabla · mostrando la última disponible"
             }
 
             try {
@@ -114,7 +118,8 @@ class HubActivity : AppCompatActivity() {
                 } else {
                     bindNews(newsFallback())
                 }
-            } catch (_: Exception) {
+            } catch (error: Exception) {
+                error.registrar("Cargar noticias (se muestran noticias de referencia)")
                 bindNews(newsFallback())
             }
         }

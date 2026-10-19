@@ -2,13 +2,13 @@ package com.example.activiti_main
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.util.Patterns
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.activiti_main.data.SupabaseProvider
@@ -49,10 +49,8 @@ class LoginActivity : AppCompatActivity() {
 
     private fun comprobarSesionGuardada() {
         if (!SupabaseProvider.isConfigured) {
-            mostrarError(
-                "Falta configurar SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY " +
-                    "en local.properties."
-            )
+            Log.e("JA_APP", "Falta configurar SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY en local.properties")
+            mostrarError("El servicio no está disponible en este momento.")
             return
         }
 
@@ -64,7 +62,7 @@ class LoginActivity : AppCompatActivity() {
                     abrirInicio()
                 }
             } catch (error: Exception) {
-                mostrarError(error.mensajeAmigable())
+                mostrarError(error.paraUsuario("Restaurar sesión guardada"))
             } finally {
                 setLoading(false)
             }
@@ -77,7 +75,7 @@ class LoginActivity : AppCompatActivity() {
 
         when {
             !SupabaseProvider.isConfigured -> {
-                mostrarError("Configurá las credenciales de Supabase en local.properties.")
+                mostrarError("El servicio no está disponible en este momento.")
                 return
             }
             !Patterns.EMAIL_ADDRESS.matcher(email).matches() -> {
@@ -99,7 +97,7 @@ class LoginActivity : AppCompatActivity() {
                 }
                 abrirInicio()
             } catch (error: Exception) {
-                mostrarError(error.mensajeAmigable())
+                mostrarError(error.paraUsuario("Iniciar sesión"))
             } finally {
                 setLoading(false)
             }
@@ -113,7 +111,7 @@ class LoginActivity : AppCompatActivity() {
             return
         }
         if (!SupabaseProvider.isConfigured) {
-            mostrarError("Configurá Supabase antes de continuar.")
+            mostrarError("El servicio no está disponible en este momento.")
             return
         }
 
@@ -121,13 +119,14 @@ class LoginActivity : AppCompatActivity() {
             setLoading(true)
             try {
                 SupabaseProvider.client.auth.resetPasswordForEmail(email)
-                Toast.makeText(
+                AppDialog.mostrar(
                     this@LoginActivity,
-                    "Revisá tu email para recuperar la contraseña.",
-                    Toast.LENGTH_LONG
-                ).show()
+                    AppDialog.Tipo.EXITO,
+                    "Revisá tu email",
+                    "Te enviamos un enlace a $email para crear una nueva contraseña."
+                )
             } catch (error: Exception) {
-                mostrarError(error.mensajeAmigable())
+                mostrarError(error.paraUsuario("Recuperar contraseña"))
             } finally {
                 setLoading(false)
             }
@@ -153,23 +152,5 @@ class LoginActivity : AppCompatActivity() {
     private fun mostrarError(message: String) {
         errorText.text = message
         errorText.visibility = View.VISIBLE
-    }
-}
-
-internal fun Throwable.mensajeAmigable(): String {
-    val raw = message.orEmpty()
-    return when {
-        raw.contains("Invalid login credentials", ignoreCase = true) ->
-            "Email o contraseña incorrectos."
-        raw.contains("Email not confirmed", ignoreCase = true) ->
-            "Primero confirmá tu email desde el mensaje de Supabase."
-        raw.contains("User already registered", ignoreCase = true) ->
-            "Ya existe una cuenta con ese email."
-        raw.contains("Password should be", ignoreCase = true) ->
-            "La contraseña debe tener al menos 8 caracteres."
-        raw.contains("network", ignoreCase = true) ->
-            "No se pudo conectar. Revisá tu conexión a internet."
-        raw.isNotBlank() -> raw
-        else -> "Ocurrió un error. Intentá nuevamente."
     }
 }

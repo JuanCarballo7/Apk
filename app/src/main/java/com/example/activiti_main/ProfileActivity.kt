@@ -57,7 +57,7 @@ class ProfileActivity : AppCompatActivity() {
         findViewById<View>(R.id.btnProfileBack).setOnClickListener { finish() }
         saveButton.setOnClickListener { guardarDatos() }
         passwordButton.setOnClickListener { cambiarContrasena() }
-        logoutButton.setOnClickListener { cerrarSesion() }
+        logoutButton.setOnClickListener { confirmarCierreDeSesion() }
 
         cargarPerfil()
     }
@@ -88,12 +88,13 @@ class ProfileActivity : AppCompatActivity() {
                         .decodeSingle<ProfileApi>()
                     firstNameInput.setText(profile.firstName.ifBlank { metadataFirstName })
                     lastNameInput.setText(profile.lastName.ifBlank { metadataLastName })
-                } catch (_: Exception) {
+                } catch (error: Exception) {
+                    error.registrar("Leer tabla profiles (se usan los datos de la cuenta)")
                     firstNameInput.setText(metadataFirstName)
                     lastNameInput.setText(metadataLastName)
                 }
             } catch (error: Exception) {
-                mostrarMensaje(error.mensajeAmigable(), false)
+                mostrarMensaje(error.paraUsuario("Cargar perfil"), false)
             } finally {
                 setLoading(false)
             }
@@ -145,7 +146,7 @@ class ProfileActivity : AppCompatActivity() {
                 }
                 emailHeader.text = email
             } catch (error: Exception) {
-                mostrarMensaje(error.mensajeAmigable(), false)
+                mostrarMensaje(error.paraUsuario("Guardar datos del perfil"), false)
             } finally {
                 setLoading(false)
             }
@@ -173,11 +174,23 @@ class ProfileActivity : AppCompatActivity() {
                 passwordConfirmInput.text?.clear()
                 mostrarMensaje("Contraseña actualizada correctamente.", true)
             } catch (error: Exception) {
-                mostrarMensaje(error.mensajeAmigable(), false)
+                mostrarMensaje(error.paraUsuario("Cambiar contraseña"), false)
             } finally {
                 setLoading(false)
             }
         }
+    }
+
+    private fun confirmarCierreDeSesion() {
+        AppDialog.mostrar(
+            this,
+            AppDialog.Tipo.CONFIRMAR,
+            "¿Cerrar sesión?",
+            "Vas a tener que volver a ingresar con tu email y contraseña.",
+            botonPrincipal = "CERRAR SESIÓN",
+            onPrincipal = ::cerrarSesion,
+            botonSecundario = "CANCELAR"
+        )
     }
 
     private fun cerrarSesion() {
@@ -185,6 +198,8 @@ class ProfileActivity : AppCompatActivity() {
             setLoading(true)
             try {
                 SupabaseProvider.client.auth.signOut()
+            } catch (error: Exception) {
+                error.registrar("Cerrar sesión (se limpia la sesión local igual)")
             } finally {
                 volverAlLogin()
             }

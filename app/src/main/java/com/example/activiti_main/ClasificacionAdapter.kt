@@ -35,7 +35,8 @@ class ClasificacionAdapter(
         val item = items[position]
         val color = try {
             Color.parseColor(item.colorEquipo)
-        } catch (_: Exception) {
+        } catch (error: Exception) {
+            error.registrar("Color de equipo inválido: ${item.colorEquipo}")
             Color.WHITE
         }
 

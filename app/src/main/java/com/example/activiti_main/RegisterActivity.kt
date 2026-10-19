@@ -9,7 +9,6 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.activiti_main.data.SupabaseProvider
@@ -60,7 +59,7 @@ class RegisterActivity : AppCompatActivity() {
 
         when {
             !SupabaseProvider.isConfigured -> {
-                mostrarError("Configurá las credenciales de Supabase en local.properties.")
+                mostrarError("El servicio no está disponible en este momento.")
                 return
             }
             firstName.length < 2 -> {
@@ -107,7 +106,7 @@ class RegisterActivity : AppCompatActivity() {
                     mostrarConfirmacionEmail(email)
                 }
             } catch (error: Exception) {
-                mostrarError(error.mensajeAmigable())
+                mostrarError(error.paraUsuario("Crear cuenta"))
             } finally {
                 setLoading(false)
             }
@@ -115,15 +114,16 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     private fun mostrarConfirmacionEmail(email: String) {
-        AlertDialog.Builder(this)
-            .setTitle("Confirmá tu email")
-            .setMessage(
-                "Creamos tu cuenta. Abrí el mensaje enviado a $email y confirmala " +
-                    "antes de iniciar sesión."
-            )
-            .setPositiveButton("IR AL LOGIN") { _, _ -> finish() }
-            .setCancelable(false)
-            .show()
+        AppDialog.mostrar(
+            this,
+            AppDialog.Tipo.EXITO,
+            "Confirmá tu email",
+            "Creamos tu cuenta. Abrí el mensaje enviado a $email y confirmala " +
+                "antes de iniciar sesión.",
+            botonPrincipal = "IR AL LOGIN",
+            onPrincipal = ::finish,
+            cancelable = false
+        )
     }
 
     private fun abrirInicio() {

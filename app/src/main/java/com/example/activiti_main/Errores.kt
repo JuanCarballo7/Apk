@@ -1,0 +1,58 @@
+package com.example.activiti_main
+
+import android.util.Log
+import io.github.jan.supabase.exceptions.BadRequestRestException
+import io.github.jan.supabase.exceptions.HttpRequestException
+import io.github.jan.supabase.exceptions.NotFoundRestException
+import io.github.jan.supabase.exceptions.RestException
+import io.github.jan.supabase.exceptions.UnauthorizedRestException
+import java.io.IOException
+
+/** Etiqueta para filtrar en Logcat: `tag:JA_APP`. */
+private const val TAG = "JA_APP"
+
+/**
+ * Registra en Logcat el detalle técnico del error (tipo, mensaje y stack trace)
+ * y devuelve un mensaje simple para mostrarle al usuario.
+ */
+internal fun Throwable.paraUsuario(accion: String): String {
+    registrar(accion)
+    return mensajeAmigable()
+}
+
+/** Solo deja el detalle técnico en Logcat, sin mostrar nada al usuario. */
+internal fun Throwable.registrar(accion: String) {
+    val detalle = when (this) {
+        is RestException -> "HTTP $statusCode · error=$error · descripcion=$description"
+        else -> message.orEmpty()
+    }
+    Log.e(TAG, "[$accion] ${this::class.java.name}: $detalle", this)
+}
+
+/** Traduce el error a un texto corto y sin jerga técnica. */
+internal fun Throwable.mensajeAmigable(): String {
+    val raw = message.orEmpty()
+    return when {
+        raw.contains("Invalid login credentials", ignoreCase = true) ->
+            "Email o contraseña incorrectos."
+        raw.contains("Email not confirmed", ignoreCase = true) ->
+            "Primero confirmá tu email desde el mensaje que te enviamos."
+        raw.contains("User already registered", ignoreCase = true) ->
+            "Ya existe una cuenta con ese email."
+        raw.contains("Password should be", ignoreCase = true) ->
+            "La contraseña debe tener al menos 8 caracteres."
+        raw.contains("rate limit", ignoreCase = true) ->
+            "Hiciste demasiados intentos. Esperá unos minutos y probá de nuevo."
+        this is HttpRequestException || this is IOException ||
+            raw.contains("network", ignoreCase = true) ||
+            raw.contains("timeout", ignoreCase = true) ->
+            "No se pudo conectar. Revisá tu conexión a internet."
+        this is UnauthorizedRestException ->
+            "Tu sesión venció. Volvé a iniciar sesión."
+        this is NotFoundRestException ->
+            "No encontramos la información que buscabas."
+        this is BadRequestRestException ->
+            "Revisá los datos ingresados e intentá de nuevo."
+        else -> "Ocurrió un error. Intentá nuevamente."
+    }
+}

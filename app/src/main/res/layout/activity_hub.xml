@@ -68,26 +68,47 @@
 
     <!-- Evento -->
     <LinearLayout
+        android:id="@+id/bloqueEvento"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:paddingHorizontal="14dp"
         android:paddingBottom="8dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="R13 | 06 - 08 NOV"
-            android:textColor="#CCCCCC"
-            android:textSize="12sp" />
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="R13 | 06 - 08 NOV"
+                android:textColor="#CCCCCC"
+                android:textSize="12sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="🇦🇷  Argentina  ›"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+        </LinearLayout>
 
         <TextView
+            android:id="@+id/btnEntradas"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="🇦🇷  Argentina  ›"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_tab_active"
+            android:gravity="center"
+            android:paddingHorizontal="16dp"
+            android:text="🎟  ENTRADAS"
             android:textColor="#FFFFFF"
-            android:textSize="20sp"
+            android:textSize="12sp"
             android:textStyle="bold" />
     </LinearLayout>
 

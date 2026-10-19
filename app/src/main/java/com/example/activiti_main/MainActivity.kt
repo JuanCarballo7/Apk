@@ -4,7 +4,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.activiti_main.data.SupabaseProvider
@@ -31,7 +30,7 @@ class MainActivity : AppCompatActivity() {
             abrirHub("tablas")
         }
         findViewById<TextView>(R.id.tabVideos).setOnClickListener {
-            Toast.makeText(this, "Videos próximamente", Toast.LENGTH_SHORT).show()
+            AppDialog.proximamente(this, "La sección de videos")
         }
         findViewById<TextView>(R.id.tabNosotros).setOnClickListener {
             // Ya estamos en Nosotros
@@ -44,13 +43,13 @@ class MainActivity : AppCompatActivity() {
             abrirHub("tablas")
         }
 
-        val toastSocial = { red: String ->
-            Toast.makeText(this, "$red próximamente", Toast.LENGTH_SHORT).show()
+        val avisoRedSocial = { red: String ->
+            AppDialog.proximamente(this, "Nuestra cuenta de $red")
         }
-        findViewById<TextView>(R.id.btnInstagram).setOnClickListener { toastSocial("Instagram") }
-        findViewById<TextView>(R.id.btnTwitter).setOnClickListener { toastSocial("X / Twitter") }
-        findViewById<TextView>(R.id.btnYoutube).setOnClickListener { toastSocial("YouTube") }
-        findViewById<TextView>(R.id.btnTiktok).setOnClickListener { toastSocial("TikTok") }
+        findViewById<TextView>(R.id.btnInstagram).setOnClickListener { avisoRedSocial("Instagram") }
+        findViewById<TextView>(R.id.btnTwitter).setOnClickListener { avisoRedSocial("X / Twitter") }
+        findViewById<TextView>(R.id.btnYoutube).setOnClickListener { avisoRedSocial("YouTube") }
+        findViewById<TextView>(R.id.btnTiktok).setOnClickListener { avisoRedSocial("TikTok") }
     }
 
     private fun abrirHub(tab: String) {
@@ -70,7 +69,8 @@ class MainActivity : AppCompatActivity() {
                 if (SupabaseProvider.client.auth.currentSessionOrNull() == null) {
                     volverAlLogin()
                 }
-            } catch (_: Exception) {
+            } catch (error: Exception) {
+                error.registrar("Comprobar sesión al abrir la app")
                 volverAlLogin()
             }
         }

@@ -15,3 +15,14 @@ fun View.applyTopSystemBarPadding() {
     }
     ViewCompat.requestApplyInsets(this)
 }
+
+/** Evita que el contenido quede debajo de la barra de navegación del sistema. */
+fun View.applyBottomSystemBarPadding() {
+    val basePaddingBottom = paddingBottom
+    ViewCompat.setOnApplyWindowInsetsListener(this) { view, insets ->
+        val bottomInset = insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom
+        view.updatePadding(bottom = basePaddingBottom + bottomInset)
+        insets
+    }
+    ViewCompat.requestApplyInsets(this)
+}

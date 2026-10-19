@@ -43,6 +43,9 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
+            android:name=".EntradasActivity"
+            android:exported="false" />
+        <activity
             android:name=".DetallePilotoActivity"
             android:exported="false"
             android:screenOrientation="landscape"

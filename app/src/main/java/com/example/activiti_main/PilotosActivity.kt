@@ -3,7 +3,6 @@ package com.example.activiti_main
 import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -40,16 +39,15 @@ class PilotosActivity : AppCompatActivity() {
                 val drivers = F1Repository.getDrivers()
                 if (drivers.isNotEmpty()) {
                     adapter.submitList(drivers)
-                    txtEstado.text = "${drivers.size} pilotos · API Supabase"
+                    txtEstado.text = "${drivers.size} pilotos"
                 } else {
                     adapter.submitList(driversFallback())
-                    txtEstado.text = "Datos locales (API vacía)"
+                    txtEstado.text = "Mostrando pilotos destacados"
                 }
-            } catch (e: Exception) {
+            } catch (error: Exception) {
+                error.registrar("Cargar pilotos (se muestran datos de referencia)")
                 adapter.submitList(driversFallback())
-                txtEstado.text = "Datos locales (API no disponible)"
-                Toast.makeText(this@PilotosActivity, e.message ?: "Error API", Toast.LENGTH_SHORT)
-                    .show()
+                txtEstado.text = "No pudimos actualizar la lista · mostrando pilotos destacados"
             }
         }
     }
