@@ -68,7 +68,8 @@ object EntradasCatalogo {
         ZonaCircuito(ZONA_CAMPO, "Campo General", 2, poligono(225f, 205f, 318f, 205f, 318f, 232f, 232f, 230f))
     )
 
-    val entradas = listOf(
+    /** Catálogo de respaldo: se usa si no se puede leer la tabla tickets de Supabase. */
+    val entradasLocales = listOf(
         Entrada("principal-3d", "Tribuna Principal 3-Days", ZONA_PRINCIPAL, CategoriaEntrada.TRIBUNA, TRES_DIAS, 1_850_000.0, techada = true, pantalla = true),
         Entrada("principal-dom", "Tribuna Principal Domingo", ZONA_PRINCIPAL, CategoriaEntrada.TRIBUNA, DOMINGO, 1_150_000.0, techada = true, pantalla = true),
         Entrada("curva1-3d", "Tribuna Curva 1 3-Days", ZONA_CURVA1, CategoriaEntrada.TRIBUNA, TRES_DIAS, 1_290_000.0, pantalla = true),
@@ -83,6 +84,15 @@ object EntradasCatalogo {
         Entrada("champions-club-3d", "Champions Club - Recta Principal", ZONA_PRINCIPAL, CategoriaEntrada.HOSPITALITY, TRES_DIAS, 4_555_526.62, techada = true, pantalla = true, catering = true, agotada = true),
         Entrada("terraza-curva4-3d", "Terraza Hospitality Curva 4", ZONA_CURVA4, CategoriaEntrada.HOSPITALITY, TRES_DIAS, 6_980_000.0, techada = true, pantalla = true, catering = true)
     )
+
+    /** Catálogo vigente: arranca con el local y se reemplaza con el de Supabase al cargarlo. */
+    @Volatile
+    var entradas: List<Entrada> = entradasLocales
+        private set
+
+    fun actualizar(nuevas: List<Entrada>) {
+        entradas = nuevas
+    }
 
     fun zona(id: String): ZonaCircuito? = zonas.firstOrNull { it.id == id }
 
@@ -111,7 +121,7 @@ object Carrito {
     fun lineas(): List<Pair<Entrada, Int>> =
         items.mapNotNull { (id, cant) -> EntradasCatalogo.entrada(id)?.let { it to cant } }
 
-    fun cantidadTotal(): Int = items.values.sum()
+    fun cantidadTotal(): Int = lineas().sumOf { it.second }
 
     fun total(): Double = lineas().sumOf { (e, cant) -> e.precio * cant }
 

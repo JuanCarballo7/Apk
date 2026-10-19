@@ -7,5 +7,9 @@ import kotlinx.serialization.Serializable
 data class ProfileApi(
     val id: String,
     @SerialName("first_name") val firstName: String = "",
-    @SerialName("last_name") val lastName: String = ""
-)
+    @SerialName("last_name") val lastName: String = "",
+    val role: String = "user"
+) {
+    val esAdmin: Boolean get() = role == "admin" || role == "superadmin"
+    val esSuperadmin: Boolean get() = role == "superadmin"
+}

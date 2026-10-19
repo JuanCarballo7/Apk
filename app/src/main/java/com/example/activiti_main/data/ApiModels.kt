@@ -82,3 +82,47 @@ data class ClasificacionItem(
     val wins: Int = 0,
     val podiums: Int = 0
 )
+
+@Serializable
+data class TicketApi(
+    val id: String,
+    @SerialName("zone_id") val zoneId: String,
+    val nombre: String,
+    val categoria: String,
+    val dias: String,
+    val precio: Double,
+    val stock: Int = 0,
+    val techada: Boolean = false,
+    val pantalla: Boolean = false,
+    val catering: Boolean = false,
+    val activo: Boolean = true
+) {
+    val agotada: Boolean get() = stock <= 0
+}
+
+/** Campos editables de una noticia desde el panel admin (sin valores por defecto: siempre se envían todos). */
+@Serializable
+data class NewsInput(
+    val title: String,
+    val summary: String?,
+    @SerialName("image_url") val imageUrl: String?,
+    val badge: String?,
+    val featured: Boolean,
+    val published: Boolean
+)
+
+@Serializable
+data class UsuarioAdmin(
+    val id: String,
+    val email: String? = null,
+    @SerialName("first_name") val firstName: String = "",
+    @SerialName("last_name") val lastName: String = "",
+    val role: String = "user"
+)
+
+@Serializable
+data class OrdenCreada(
+    val id: Long,
+    val codigo: String,
+    val total: Double
+)

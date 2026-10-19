@@ -6,13 +6,17 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.activiti_main.data.Carrito
 import com.example.activiti_main.data.CategoriaEntrada
 import com.example.activiti_main.data.Entrada
 import com.example.activiti_main.data.EntradasCatalogo
+import com.example.activiti_main.data.EntradasRepository
+import com.example.activiti_main.data.SupabaseProvider
 import com.example.activiti_main.data.formatearArs
+import kotlinx.coroutines.launch
 
 class EntradasActivity : AppCompatActivity() {
 
@@ -29,6 +33,7 @@ class EntradasActivity : AppCompatActivity() {
     private var categoria: CategoriaEntrada? = null
     private var zonaFiltro: String? = null
     private var sectorFiltro: Int? = null
+    private var comprando = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -86,6 +91,21 @@ class EntradasActivity : AppCompatActivity() {
         findViewById<View>(R.id.btnVerCarrito).setOnClickListener { mostrarCarrito() }
 
         actualizarLista()
+        cargarPrecios()
+    }
+
+    /** Trae precios y stock de Supabase; si falla, queda el catálogo local de Entradas.kt. */
+    private fun cargarPrecios() {
+        if (!SupabaseProvider.isConfigured) return
+        lifecycleScope.launch {
+            try {
+                EntradasCatalogo.actualizar(EntradasRepository.getEntradas())
+            } catch (error: Exception) {
+                error.registrar("Cargar precios de entradas (se usa el catálogo local)")
+            }
+            actualizarLista()
+            actualizarCarrito()
+        }
     }
 
     override fun onResume() {
@@ -212,19 +232,35 @@ class EntradasActivity : AppCompatActivity() {
         )
     }
 
+    /** La orden se crea en Supabase: la base toma precios y stock de la tabla tickets, no del carrito. */
     private fun confirmarCompra() {
-        val total = formatearArs(Carrito.total())
-        val cantidad = Carrito.cantidadTotal()
-        val codigo = "GP26-" + (100000..999999).random()
-        Carrito.vaciar()
-        actualizarCarrito()
-        AppDialog.mostrar(
-            this,
-            AppDialog.Tipo.EXITO,
-            "¡Compra confirmada!",
-            "Reservaste $cantidad ${if (cantidad == 1) "entrada" else "entradas"} para el GP de Argentina.\n\n" +
-                "Código de reserva: $codigo\nTotal: $total",
-            botonPrincipal = "LISTO"
-        )
+        val lineas = Carrito.lineas()
+        if (lineas.isEmpty() || comprando) return
+        val cantidad = lineas.sumOf { it.second }
+        comprando = true
+        lifecycleScope.launch {
+            try {
+                val orden = EntradasRepository.crearOrden(lineas)
+                Carrito.vaciar()
+                actualizarCarrito()
+                AppDialog.mostrar(
+                    this@EntradasActivity,
+                    AppDialog.Tipo.EXITO,
+                    "¡Compra confirmada!",
+                    "Reservaste $cantidad ${if (cantidad == 1) "entrada" else "entradas"} para el GP de Argentina.\n\n" +
+                        "Código de reserva: ${orden.codigo}\nTotal: ${formatearArs(orden.total)}",
+                    botonPrincipal = "LISTO"
+                )
+            } catch (error: Exception) {
+                AppDialog.error(
+                    this@EntradasActivity,
+                    error.paraUsuario("Confirmar compra de entradas"),
+                    "No se pudo confirmar la compra"
+                )
+            } finally {
+                comprando = false
+                cargarPrecios()
+            }
+        }
     }
 }

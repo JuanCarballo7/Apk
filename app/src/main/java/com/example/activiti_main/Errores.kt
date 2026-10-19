@@ -43,6 +43,15 @@ internal fun Throwable.mensajeAmigable(): String {
             "La contraseña debe tener al menos 8 caracteres."
         raw.contains("rate limit", ignoreCase = true) ->
             "Hiciste demasiados intentos. Esperá unos minutos y probá de nuevo."
+        raw.contains("SIN_STOCK") ->
+            "Una de las entradas de tu carrito se agotó. Revisá el carrito e intentá de nuevo."
+        raw.contains("NO_DISPONIBLE") ->
+            "Una de las entradas de tu carrito ya no está a la venta."
+        raw.contains("ROL_PROPIO") ->
+            "No podés cambiar tu propio rol."
+        raw.contains("NO_AUTORIZADO") || raw.contains("row-level security", ignoreCase = true) ||
+            raw.contains("permission denied", ignoreCase = true) ->
+            "No tenés permiso para hacer esto."
         this is HttpRequestException || this is IOException ||
             raw.contains("network", ignoreCase = true) ||
             raw.contains("timeout", ignoreCase = true) ->

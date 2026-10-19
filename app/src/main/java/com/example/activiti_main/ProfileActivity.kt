@@ -30,6 +30,7 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var saveButton: Button
     private lateinit var passwordButton: Button
     private lateinit var logoutButton: Button
+    private lateinit var adminButton: Button
     private lateinit var progress: ProgressBar
     private lateinit var messageText: TextView
     private lateinit var emailHeader: TextView
@@ -50,6 +51,7 @@ class ProfileActivity : AppCompatActivity() {
         saveButton = findViewById(R.id.btnSaveProfile)
         passwordButton = findViewById(R.id.btnChangePassword)
         logoutButton = findViewById(R.id.btnProfileLogout)
+        adminButton = findViewById(R.id.btnAdminPanel)
         progress = findViewById(R.id.progressProfile)
         messageText = findViewById(R.id.txtProfileMessage)
         emailHeader = findViewById(R.id.txtProfileEmailHeader)
@@ -58,6 +60,7 @@ class ProfileActivity : AppCompatActivity() {
         saveButton.setOnClickListener { guardarDatos() }
         passwordButton.setOnClickListener { cambiarContrasena() }
         logoutButton.setOnClickListener { confirmarCierreDeSesion() }
+        adminButton.setOnClickListener { startActivity(Intent(this, AdminActivity::class.java)) }
 
         cargarPerfil()
     }
@@ -88,6 +91,7 @@ class ProfileActivity : AppCompatActivity() {
                         .decodeSingle<ProfileApi>()
                     firstNameInput.setText(profile.firstName.ifBlank { metadataFirstName })
                     lastNameInput.setText(profile.lastName.ifBlank { metadataLastName })
+                    adminButton.visibility = if (profile.esAdmin) View.VISIBLE else View.GONE
                 } catch (error: Exception) {
                     error.registrar("Leer tabla profiles (se usan los datos de la cuenta)")
                     firstNameInput.setText(metadataFirstName)

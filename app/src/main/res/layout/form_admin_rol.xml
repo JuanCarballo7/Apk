@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/grupoAdminRol"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <RadioButton
+        android:id="@+id/radioRolUser"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:buttonTint="#E10600"
+        android:text="Usuario"
+        android:textColor="#FFFFFF" />
+
+    <RadioButton
+        android:id="@+id/radioRolAdmin"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:buttonTint="#E10600"
+        android:text="Admin · entradas y noticias"
+        android:textColor="#FFFFFF" />
+
+    <RadioButton
+        android:id="@+id/radioRolSuperadmin"
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:buttonTint="#E10600"
+        android:text="Superadmin · también usuarios"
+        android:textColor="#FFFFFF" />
+</RadioGroup>
