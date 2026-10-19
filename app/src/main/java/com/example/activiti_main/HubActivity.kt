@@ -27,6 +27,7 @@ class HubActivity : AppCompatActivity() {
     private lateinit var panelPlaceholder: View
     private lateinit var txtPlaceholder: TextView
     private lateinit var txtSubtituloClasificacion: TextView
+    private lateinit var txtActualizacionClasificacion: TextView
 
     private lateinit var imgFeatured: ImageView
     private lateinit var txtFeaturedBadge: TextView
@@ -52,6 +53,7 @@ class HubActivity : AppCompatActivity() {
         panelPlaceholder = findViewById(R.id.panelPlaceholder)
         txtPlaceholder = findViewById(R.id.txtPlaceholder)
         txtSubtituloClasificacion = findViewById(R.id.txtSubtituloClasificacion)
+        txtActualizacionClasificacion = findViewById(R.id.txtActualizacionClasificacion)
 
         imgFeatured = findViewById(R.id.imgFeaturedNews)
         txtFeaturedBadge = findViewById(R.id.txtFeaturedBadge)
@@ -100,15 +102,24 @@ class HubActivity : AppCompatActivity() {
     private fun cargarDesdeApi() {
         lifecycleScope.launch {
             try {
-                val standings = F1Repository.getStandings()
+                val tabla = F1Repository.getTabla()
                 clasificacionAdapter.submitList(
-                    if (standings.isNotEmpty()) standings else rankingFallback()
+                    if (tabla.items.isNotEmpty()) tabla.items else rankingFallback()
                 )
+                txtSubtituloClasificacion.text =
+                    "Temporada ${tabla.temporada} · Tocá un piloto para ver su ficha"
+                txtActualizacionClasificacion.text = when {
+                    tabla.ultimaCarrera != null ->
+                        "Actualizado tras el ${tabla.ultimaCarrera} ${tabla.temporada} · Fecha ${tabla.ronda}"
+                    tabla.ronda > 0 -> "Actualizado tras la fecha ${tabla.ronda} de ${tabla.temporada}"
+                    else -> "Temporada ${tabla.temporada}"
+                }
             } catch (error: Exception) {
                 error.registrar("Cargar clasificación (se muestran datos de referencia)")
                 clasificacionAdapter.submitList(rankingFallback())
                 txtSubtituloClasificacion.text =
                     "No pudimos actualizar la tabla · mostrando la última disponible"
+                txtActualizacionClasificacion.text = "Datos de referencia sin conexión"
             }
 
             try {

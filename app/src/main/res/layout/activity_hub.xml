@@ -304,7 +304,8 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:paddingVertical="10dp"
-            android:text="Actualizado tras el GP de Hungría 2026"
+            android:id="@+id/txtActualizacionClasificacion"
+            android:text="Actualizando posiciones…"
             android:textColor="#777777"
             android:textSize="11sp" />
     </LinearLayout>

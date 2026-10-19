@@ -1,8 +1,10 @@
 package com.example.activiti_main.data
 
+import android.util.Log
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
+import kotlinx.coroutines.CancellationException
 
 object F1Repository {
 
@@ -26,6 +28,36 @@ object F1Repository {
         teams ( name, color_hex )
         """.trimIndent()
     )
+
+    /**
+     * Tabla de posiciones actualizada: primero la API pública de Jolpica (datos en vivo);
+     * si falla, la tabla cargada en Supabase. Los datos de carrera de cada piloto
+     * (títulos, podios, foto) se completan desde la tabla drivers cuando están.
+     */
+    suspend fun getTabla(): TablaPosiciones {
+        val enVivo = try {
+            JolpicaApi.getTablaActual()
+        } catch (error: Exception) {
+            if (error is CancellationException) throw error
+            Log.w("JA_APP", "[Posiciones en vivo] Jolpica no respondió, se usa Supabase", error)
+            null
+        }
+        if (enVivo == null || enVivo.items.isEmpty()) {
+            return TablaPosiciones(getStandings(), SEASON.toString())
+        }
+
+        val perfiles = runCatching { getDrivers() }.getOrDefault(emptyList()).associateBy { it.code }
+        return enVivo.copy(items = enVivo.items.map { item ->
+            val d = perfiles[item.code] ?: return@map item
+            item.copy(
+                driverId = d.id,
+                photoUrl = d.photoUrl,
+                championships = d.championships,
+                wins = maxOf(d.wins, item.wins),
+                podiums = d.podiums
+            )
+        })
+    }
 
     suspend fun getStandings(seasonYear: Int = SEASON): List<ClasificacionItem> {
         if (!SupabaseProvider.isConfigured) return emptyList()
