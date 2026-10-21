@@ -152,7 +152,7 @@ class AdminUsuariosAdapter(
     override fun onBindViewHolder(holder: VH, position: Int) {
         val u = items[position]
         holder.nombre.text = "${u.firstName} ${u.lastName}".trim().ifBlank { "Sin nombre" }
-        holder.email.text = u.email.orEmpty()
+        holder.email.text = "${u.email.orEmpty()} · Saldo ${formatearArs(u.saldo)}"
         if (u.role == "user") holder.rol.badge("USUARIO", lleno = false, colorTexto = "#CCCCCC")
         else holder.rol.badge(rolLegible(u.role).uppercase(), lleno = true)
         holder.fila.setOnClickListener { onClick(u) }

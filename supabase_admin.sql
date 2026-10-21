@@ -214,6 +214,7 @@ grant usage, select on all sequences in schema public to authenticated;
 -- ============================================================
 
 -- Crea una orden confirmada con precios y stock tomados de la base (nunca del cliente).
+-- supabase_saldo.sql la reemplaza por una versión que cobra del saldo: ejecutalo después de este archivo.
 -- p_items: [{"ticket_id": "campo-3d", "cantidad": 2}, ...]
 create or replace function public.crear_orden(p_items jsonb)
 returns jsonb

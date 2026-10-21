@@ -48,7 +48,7 @@ class AdminActivity : AppCompatActivity() {
         onAgotar = ::confirmarAgotada
     )
     private val noticiasAdapter = AdminNoticiasAdapter(onClick = ::editarNoticia)
-    private val usuariosAdapter = AdminUsuariosAdapter(onClick = ::elegirRol)
+    private val usuariosAdapter = AdminUsuariosAdapter(onClick = ::opcionesUsuario)
 
     private var perfil: ProfileApi? = null
     private var seccion = Seccion.ENTRADAS
@@ -327,8 +327,95 @@ class AdminActivity : AppCompatActivity() {
 
     // ---------- Usuarios ----------
 
+    private fun nombreDe(usuario: UsuarioAdmin) =
+        "${usuario.firstName} ${usuario.lastName}".trim().ifBlank { usuario.email.orEmpty() }
+
+    private fun opcionesUsuario(usuario: UsuarioAdmin) {
+        AppDialog.mostrar(
+            this,
+            AppDialog.Tipo.INFO,
+            nombreDe(usuario),
+            "${usuario.email.orEmpty()}\nSaldo: ${formatearArs(usuario.saldo)}",
+            botonPrincipal = "CARGAR SALDO",
+            onPrincipal = { pedirMonto(usuario, esCarga = true) },
+            botonSecundario = "DESCONTAR",
+            onSecundario = { pedirMonto(usuario, esCarga = false) },
+            enlace = "Cambiar rol",
+            onEnlace = { elegirRol(usuario) }
+        )
+    }
+
+    private fun pedirMonto(usuario: UsuarioAdmin, esCarga: Boolean) {
+        val nombre = nombreDe(usuario)
+        val form = LayoutInflater.from(this).inflate(R.layout.form_admin_saldo, null)
+        val editMonto = form.findViewById<EditText>(R.id.editAdminSaldoMonto)
+        val editMotivo = form.findViewById<EditText>(R.id.editAdminSaldoMotivo)
+
+        AppDialog.mostrar(
+            this,
+            AppDialog.Tipo.INFO,
+            if (esCarga) "Cargar saldo" else "Descontar saldo",
+            "$nombre · Saldo actual: ${formatearArs(usuario.saldo)}",
+            botonPrincipal = if (esCarga) "CARGAR" else "DESCONTAR",
+            onPrincipal = {
+                val monto = editMonto.text.toString().trim().replace(',', '.').toBigDecimalOrNull()
+                    ?.setScale(2, RoundingMode.HALF_UP)
+                when {
+                    monto == null || monto <= BigDecimal.ZERO ->
+                        AppDialog.error(this, "Ingresá un monto mayor a cero (por ejemplo 500000).", "Monto inválido")
+                    !esCarga && monto.toDouble() > usuario.saldo ->
+                        AppDialog.error(
+                            this,
+                            "$nombre tiene ${formatearArs(usuario.saldo)}: no se puede descontar más que eso.",
+                            "Saldo insuficiente"
+                        )
+                    else -> confirmarSaldo(
+                        usuario,
+                        nombre,
+                        if (esCarga) monto.toDouble() else -monto.toDouble(),
+                        editMotivo.text.toString().trim().ifBlank { null }
+                    )
+                }
+            },
+            botonSecundario = "CANCELAR",
+            contenido = form,
+            cancelable = false
+        )
+    }
+
+    private fun confirmarSaldo(usuario: UsuarioAdmin, nombre: String, monto: Double, motivo: String?) {
+        val esCarga = monto > 0
+        AppDialog.mostrar(
+            this,
+            AppDialog.Tipo.CONFIRMAR,
+            if (esCarga) "¿Cargar saldo?" else "¿Descontar saldo?",
+            "${if (esCarga) "Se le suman" else "Se le descuentan"} ${formatearArs(kotlin.math.abs(monto))} a $nombre.\n" +
+                "Saldo final: ${formatearArs(usuario.saldo + monto)}",
+            botonPrincipal = "CONFIRMAR",
+            onPrincipal = {
+                lifecycleScope.launch {
+                    setCargando(true)
+                    try {
+                        val saldo = AdminRepository.asignarSaldo(usuario.id, monto, motivo)
+                        AppDialog.mostrar(
+                            this@AdminActivity,
+                            AppDialog.Tipo.EXITO,
+                            "Saldo actualizado",
+                            "$nombre ahora tiene ${formatearArs(saldo)}."
+                        )
+                        cargar()
+                    } catch (error: Exception) {
+                        setCargando(false)
+                        AppDialog.error(this@AdminActivity, error.paraUsuario("Asignar saldo $monto a ${usuario.id}"))
+                    }
+                }
+            },
+            botonSecundario = "CANCELAR"
+        )
+    }
+
     private fun elegirRol(usuario: UsuarioAdmin) {
-        val nombre = "${usuario.firstName} ${usuario.lastName}".trim().ifBlank { usuario.email.orEmpty() }
+        val nombre = nombreDe(usuario)
         if (usuario.id == perfil?.id) {
             AppDialog.mostrar(this, AppDialog.Tipo.INFO, "Es tu cuenta", "No podés cambiar tu propio rol.")
             return

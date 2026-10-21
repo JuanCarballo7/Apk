@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.activiti_main.data.ProfileApi
 import com.example.activiti_main.data.SupabaseProvider
+import com.example.activiti_main.data.formatearArs
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.launch
@@ -34,6 +35,7 @@ class ProfileActivity : AppCompatActivity() {
     private lateinit var progress: ProgressBar
     private lateinit var messageText: TextView
     private lateinit var emailHeader: TextView
+    private lateinit var saldoText: TextView
 
     private var originalEmail = ""
 
@@ -55,6 +57,7 @@ class ProfileActivity : AppCompatActivity() {
         progress = findViewById(R.id.progressProfile)
         messageText = findViewById(R.id.txtProfileMessage)
         emailHeader = findViewById(R.id.txtProfileEmailHeader)
+        saldoText = findViewById(R.id.txtProfileSaldo)
 
         findViewById<View>(R.id.btnProfileBack).setOnClickListener { finish() }
         saveButton.setOnClickListener { guardarDatos() }
@@ -95,6 +98,7 @@ class ProfileActivity : AppCompatActivity() {
                     firstNameInput.setText(profile.firstName.ifBlank { metadataFirstName })
                     lastNameInput.setText(profile.lastName.ifBlank { metadataLastName })
                     adminButton.visibility = if (profile.esAdmin) View.VISIBLE else View.GONE
+                    saldoText.text = "${formatearArs(profile.saldo)}\nSaldo disponible"
                 } catch (error: Exception) {
                     error.registrar("Leer tabla profiles (se usan los datos de la cuenta)")
                     firstNameInput.setText(metadataFirstName)

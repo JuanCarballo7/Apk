@@ -118,14 +118,16 @@ data class UsuarioAdmin(
     val email: String? = null,
     @SerialName("first_name") val firstName: String = "",
     @SerialName("last_name") val lastName: String = "",
-    val role: String = "user"
+    val role: String = "user",
+    val saldo: Double = 0.0
 )
 
 @Serializable
 data class OrdenCreada(
     val id: Long,
     val codigo: String,
-    val total: Double
+    val total: Double,
+    val saldo: Double? = null
 )
 
 @Serializable

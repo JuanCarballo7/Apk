@@ -54,6 +54,10 @@ internal fun Throwable.mensajeAmigable(): String {
             "Una de las entradas de tu carrito se agotó. Revisá el carrito e intentá de nuevo."
         raw.contains("NO_DISPONIBLE") ->
             "Una de las entradas de tu carrito ya no está a la venta."
+        raw.contains("SALDO_INSUFICIENTE") ->
+            "No tenés saldo suficiente. Pedile a un administrador que te cargue saldo."
+        raw.contains("MONTO_INVALIDO") ->
+            "Ingresá un monto válido."
         raw.contains("ROL_PROPIO") ->
             "No podés cambiar tu propio rol."
         raw.contains("NO_AUTORIZADO") || raw.contains("row-level security", ignoreCase = true) ||

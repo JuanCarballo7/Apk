@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.activiti_main.data.AdminRepository
 import com.example.activiti_main.data.Carrito
 import com.example.activiti_main.data.CategoriaEntrada
 import com.example.activiti_main.data.Entrada
@@ -15,7 +16,6 @@ import com.example.activiti_main.data.EntradasCatalogo
 import com.example.activiti_main.data.EntradasRepository
 import com.example.activiti_main.data.SupabaseProvider
 import com.example.activiti_main.data.formatearArs
-import io.github.jan.supabase.auth.auth
 import kotlinx.coroutines.launch
 
 /** Mapa, listado y carrito de entradas (Hub o pantalla completa). */
@@ -36,6 +36,7 @@ class EntradasUi(
     private var zonaFiltro: String? = null
     private var sectorFiltro: Int? = null
     private var comprando = false
+    private var saldo: Double? = null
 
     init {
         root.findViewById<View>(R.id.contenedorMapa).clipToOutline = true
@@ -88,6 +89,20 @@ class EntradasUi(
 
     fun onResume() {
         actualizarCarrito()
+        cargarSaldo()
+    }
+
+    /** Saldo de la cuenta para mostrarlo en el carrito (la base igual lo valida al comprar). */
+    private fun cargarSaldo() {
+        if (!SupabaseProvider.isConfigured) return
+        activity.lifecycleScope.launch {
+            saldo = try {
+                AdminRepository.perfilActual()?.saldo
+            } catch (error: Exception) {
+                error.registrar("Cargar saldo de la cuenta")
+                null
+            }
+        }
     }
 
     private fun cargarPrecios() {
@@ -183,7 +198,7 @@ class EntradasUi(
             activity,
             AppDialog.Tipo.INFO,
             "Tu carrito",
-            "Total: ${formatearArs(Carrito.total())}",
+            textoTotalYSaldo(Carrito.total()),
             botonPrincipal = "CONFIRMAR",
             onPrincipal = ::confirmarCompra,
             botonSecundario = "SEGUIR",
@@ -191,6 +206,13 @@ class EntradasUi(
             onEnlace = ::preguntarVaciar,
             contenido = vistaLineasCarrito()
         )
+    }
+
+    private fun textoTotalYSaldo(total: Double): String {
+        val disponible = saldo ?: return "Total: ${formatearArs(total)}"
+        val base = "Total: ${formatearArs(total)}\nTu saldo: ${formatearArs(disponible)}"
+        return if (disponible >= total) base
+        else "$base\n⚠ Te faltan ${formatearArs(total - disponible)}. Pedile a un administrador que te cargue saldo."
     }
 
     private fun vistaLineasCarrito(): View {
@@ -231,17 +253,16 @@ class EntradasUi(
         activity.lifecycleScope.launch {
             try {
                 val orden = EntradasRepository.crearOrden(lineas)
+                orden.saldo?.let { saldo = it }
                 Carrito.vaciar()
                 actualizarCarrito()
-                val email = SupabaseProvider.client.auth.currentUserOrNull()?.email
-                enviarMail(orden.id, email)
                 AppDialog.mostrar(
                     activity,
                     AppDialog.Tipo.EXITO,
                     "¡Compra confirmada!",
                     "Reservaste $cantidad ${if (cantidad == 1) "entrada" else "entradas"} para el GP de Argentina.\n\n" +
                         "Código de reserva: ${orden.codigo}\nTotal: ${formatearArs(orden.total)}" +
-                        (email?.let { "\n\nTe enviamos el comprobante con el QR a $it" } ?: ""),
+                        (orden.saldo?.let { "\nSaldo restante: ${formatearArs(it)}" } ?: ""),
                     botonPrincipal = "VER COMPROBANTE",
                     onPrincipal = {
                         activity.startActivity(ComprobanteActivity.intent(activity, orden.id))
@@ -257,24 +278,6 @@ class EntradasUi(
             } finally {
                 comprando = false
                 cargarPrecios()
-            }
-        }
-    }
-
-    /** El mail va aparte: si falla, la compra igual quedó hecha y el comprobante está en la app. */
-    private fun enviarMail(ordenId: Long, email: String?) {
-        if (email == null) return
-        activity.lifecycleScope.launch {
-            try {
-                EntradasRepository.enviarComprobantePorMail(ordenId)
-            } catch (error: Exception) {
-                error.registrar("Enviar comprobante de la orden $ordenId por mail")
-                AppDialog.mostrar(
-                    activity,
-                    AppDialog.Tipo.ERROR,
-                    "No pudimos enviarte el mail",
-                    "Tu compra está confirmada. Podés ver el comprobante y el QR en \"Mis entradas\"."
-                )
             }
         }
     }

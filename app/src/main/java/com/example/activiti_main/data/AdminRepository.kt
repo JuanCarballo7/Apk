@@ -81,6 +81,17 @@ object AdminRepository {
     suspend fun getUsuarios(): List<UsuarioAdmin> =
         client.postgrest.rpc("admin_listar_usuarios").decodeList<UsuarioAdmin>()
 
+    /** Suma (monto > 0) o descuenta (monto < 0) saldo; devuelve el saldo final de la cuenta. */
+    suspend fun asignarSaldo(userId: String, monto: Double, motivo: String?): Double =
+        client.postgrest.rpc(
+            "admin_asignar_saldo",
+            buildJsonObject {
+                put("p_user_id", userId)
+                put("p_monto", monto)
+                put("p_motivo", motivo)
+            }
+        ).decodeAs<Double>()
+
     suspend fun cambiarRol(userId: String, rol: String) {
         client.postgrest.rpc(
             "admin_cambiar_rol",
