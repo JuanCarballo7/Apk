@@ -1,9 +1,12 @@
 package com.example.activiti_main
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -18,14 +21,17 @@ import kotlinx.coroutines.launch
 class HubActivity : AppCompatActivity() {
 
     private lateinit var tabNews: TextView
-    private lateinit var tabVideos: TextView
+    private lateinit var tabEntradas: TextView
+    private lateinit var tabReaccion: TextView
     private lateinit var tabTablas: TextView
     private lateinit var tabNosotros: TextView
 
     private lateinit var panelNews: View
+    private lateinit var panelEntradas: View
+    private lateinit var panelReaccion: View
     private lateinit var panelTablas: View
-    private lateinit var panelPlaceholder: View
-    private lateinit var txtPlaceholder: TextView
+    private lateinit var entradasUi: EntradasUi
+    private lateinit var reaccionUi: ReaccionUi
     private lateinit var txtSubtituloClasificacion: TextView
     private lateinit var txtActualizacionClasificacion: TextView
 
@@ -44,14 +50,18 @@ class HubActivity : AppCompatActivity() {
         findViewById<View>(R.id.headerBar).applyTopSystemBarPadding()
 
         tabNews = findViewById(R.id.tabNews)
-        tabVideos = findViewById(R.id.tabVideos)
+        tabEntradas = findViewById(R.id.tabEntradas)
+        tabReaccion = findViewById(R.id.tabReaccion)
         tabTablas = findViewById(R.id.tabTablas)
         tabNosotros = findViewById(R.id.tabNosotros)
 
         panelNews = findViewById(R.id.panelNews)
+        panelEntradas = findViewById(R.id.panelEntradas)
+        panelReaccion = findViewById(R.id.panelReaccion)
         panelTablas = findViewById(R.id.panelTablas)
-        panelPlaceholder = findViewById(R.id.panelPlaceholder)
-        txtPlaceholder = findViewById(R.id.txtPlaceholder)
+        entradasUi = EntradasUi(this, findViewById(R.id.entradasPanelRoot))
+        entradasUi.bind()
+        reaccionUi = ReaccionUi(this, findViewById(R.id.reaccionPanelRoot))
         txtSubtituloClasificacion = findViewById(R.id.txtSubtituloClasificacion)
         txtActualizacionClasificacion = findViewById(R.id.txtActualizacionClasificacion)
 
@@ -67,7 +77,7 @@ class HubActivity : AppCompatActivity() {
             setHasFixedSize(true)
         }
 
-        newsAdapter = NewsAdapter()
+        newsAdapter = NewsAdapter(onClick = ::abrirNoticia)
         findViewById<RecyclerView>(R.id.recyclerNews).apply {
             layoutManager = GridLayoutManager(this@HubActivity, 2)
             adapter = newsAdapter
@@ -77,17 +87,16 @@ class HubActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.txtTituloClasificacion).setOnClickListener {
             startActivity(Intent(this, PilotosActivity::class.java))
         }
-        val abrirEntradas = View.OnClickListener {
-            startActivity(Intent(this, EntradasActivity::class.java))
-        }
-        findViewById<View>(R.id.bloqueEvento).setOnClickListener(abrirEntradas)
-        findViewById<View>(R.id.btnEntradas).setOnClickListener(abrirEntradas)
+        val irEntradas = View.OnClickListener { mostrarTab("entradas") }
+        findViewById<View>(R.id.bloqueEvento).setOnClickListener(irEntradas)
+        findViewById<View>(R.id.btnEntradas).setOnClickListener(irEntradas)
         findViewById<View>(R.id.btnProfile).setOnClickListener {
             startActivity(Intent(this, ProfileActivity::class.java))
         }
 
         tabNews.setOnClickListener { mostrarTab("news") }
-        tabVideos.setOnClickListener { mostrarTab("videos") }
+        tabEntradas.setOnClickListener { mostrarTab("entradas") }
+        tabReaccion.setOnClickListener { mostrarTab("reaccion") }
         tabTablas.setOnClickListener { mostrarTab("tablas") }
         tabNosotros.setOnClickListener {
             startActivity(Intent(this, MainActivity::class.java))
@@ -97,6 +106,16 @@ class HubActivity : AppCompatActivity() {
         val tabInicial = intent.getStringExtra(EXTRA_TAB) ?: "news"
         mostrarTab(tabInicial)
         cargarDesdeApi()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (::entradasUi.isInitialized) entradasUi.onResume()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (::reaccionUi.isInitialized) reaccionUi.cancelar()
     }
 
     private fun cargarDesdeApi() {
@@ -146,6 +165,7 @@ class HubActivity : AppCompatActivity() {
 
         if (featured != null) {
             cardFeatured.visibility = View.VISIBLE
+            cardFeatured.setOnClickListener { abrirNoticia(featured) }
             txtFeaturedTitle.text = featured.title
             if (featured.badge.isNullOrBlank()) {
                 txtFeaturedBadge.visibility = View.GONE
@@ -163,6 +183,45 @@ class HubActivity : AppCompatActivity() {
         }
 
         newsAdapter.submitList(rest)
+    }
+
+    /** Detalle de una noticia: imagen, categoría y resumen en el modal de la app. */
+    private fun abrirNoticia(noticia: NewsApi) {
+        val density = resources.displayMetrics.density
+        val contenido = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(
+                ImageView(this@HubActivity).apply {
+                    scaleType = ImageView.ScaleType.CENTER_CROP
+                    contentDescription = noticia.title
+                    MediaHelper.loadFlexible(this, noticia.imageUrl, R.drawable.news_featured)
+                },
+                LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, (160 * density).toInt())
+            )
+            addView(TextView(this@HubActivity).apply {
+                text = listOfNotNull(noticia.category, noticia.badge?.takeIf { it.isNotBlank() })
+                    .joinToString(" · ")
+                    .uppercase()
+                setTextColor(Color.parseColor("#E10600"))
+                textSize = 11f
+                setTypeface(typeface, Typeface.BOLD)
+                setPadding(0, (12 * density).toInt(), 0, (6 * density).toInt())
+            })
+            addView(TextView(this@HubActivity).apply {
+                text = noticia.summary?.takeIf { it.isNotBlank() }
+                    ?: "Todavía no hay más detalles de esta noticia. Pronto vas a poder leer la nota completa."
+                setTextColor(Color.parseColor("#D0D0D0"))
+                textSize = 14f
+                setLineSpacing(0f, 1.15f)
+            })
+        }
+        AppDialog.mostrar(
+            this,
+            AppDialog.Tipo.INFO,
+            noticia.title,
+            botonPrincipal = "CERRAR",
+            contenido = contenido
+        )
     }
 
     private fun abrirDetalleDesdeRanking(item: ClasificacionItem) {
@@ -204,11 +263,16 @@ class HubActivity : AppCompatActivity() {
     )
 
     private fun newsFallback(): List<NewsApi> = listOf(
-        NewsApi(1, "Autódromo Oscar y Juan Gálvez: la Catedral del Automovilismo argentino", badge = "UNLOCKED", featured = true, imageUrl = "news_featured"),
-        NewsApi(2, "Inaugurado en 1952, fue sede de 20 Grandes Premios de F1", badge = "UNLOCKED", imageUrl = "news_galvez"),
-        NewsApi(3, "MotoGP vuelve a Buenos Aires en 2027, tras 28 años de ausencia", imageUrl = "news_motogp"),
-        NewsApi(4, "Remodelación de u\$s100M para volver a estándares FIA", imageUrl = "news_featured"),
-        NewsApi(5, "190 hectáreas en Villa Riachuelo, Buenos Aires", imageUrl = "news_galvez")
+        NewsApi(1, "Autódromo Oscar y Juan Gálvez: la Catedral del Automovilismo argentino", badge = "UNLOCKED", featured = true, imageUrl = "news_featured",
+            summary = "El autódromo porteño es el templo del automovilismo nacional. Por su asfalto pasaron Fangio, Reutemann y las principales categorías del país, y se prepara para volver a recibir competencias internacionales."),
+        NewsApi(2, "Inaugurado en 1952, fue sede de 20 Grandes Premios de F1", badge = "UNLOCKED", imageUrl = "news_galvez",
+            summary = "Desde su inauguración en 1952, el Gálvez recibió 20 Grandes Premios de Fórmula 1 entre 1953 y 1998. Juan Manuel Fangio ganó cuatro veces en casa, la marca más alta de un piloto local."),
+        NewsApi(3, "MotoGP vuelve a Buenos Aires en 2027, tras 28 años de ausencia", imageUrl = "news_motogp", category = "MotoGP",
+            summary = "El Mundial de motociclismo regresa a la Ciudad de Buenos Aires. La última vez que MotoGP corrió en el Gálvez fue en 1999, y la fecha de 2027 ya está confirmada en el calendario."),
+        NewsApi(4, "Remodelación de u\$s100M para volver a estándares FIA", imageUrl = "news_featured",
+            summary = "La obra incluye repavimentación completa, nuevas zonas de escape, boxes modernos y una torre de control renovada para cumplir con la homologación que exige la FIA para categorías internacionales."),
+        NewsApi(5, "190 hectáreas en Villa Riachuelo, Buenos Aires", imageUrl = "news_galvez",
+            summary = "El predio ocupa unas 190 hectáreas en el sur de la Ciudad. Además del circuito principal tiene varias configuraciones de trazado, lagos y espacios verdes que se usan para eventos durante todo el año.")
     )
 
     private fun mostrarTab(tab: String) {
@@ -218,10 +282,13 @@ class HubActivity : AppCompatActivity() {
                 tabNews.setBackgroundResource(R.drawable.bg_tab_active)
                 panelNews.visibility = View.VISIBLE
             }
-            "videos" -> {
-                tabVideos.setBackgroundResource(R.drawable.bg_tab_active)
-                panelPlaceholder.visibility = View.VISIBLE
-                txtPlaceholder.text = "Videos próximamente"
+            "entradas" -> {
+                tabEntradas.setBackgroundResource(R.drawable.bg_tab_active)
+                panelEntradas.visibility = View.VISIBLE
+            }
+            "reaccion" -> {
+                tabReaccion.setBackgroundResource(R.drawable.bg_tab_active)
+                panelReaccion.visibility = View.VISIBLE
             }
             else -> {
                 tabTablas.setBackgroundResource(R.drawable.bg_tab_active)
@@ -231,13 +298,16 @@ class HubActivity : AppCompatActivity() {
     }
 
     private fun resetTabs() {
+        if (::reaccionUi.isInitialized) reaccionUi.cancelar()
         tabNews.setBackgroundResource(R.drawable.bg_tab_inactive)
-        tabVideos.setBackgroundResource(R.drawable.bg_tab_inactive)
+        tabEntradas.setBackgroundResource(R.drawable.bg_tab_inactive)
+        tabReaccion.setBackgroundResource(R.drawable.bg_tab_inactive)
         tabTablas.setBackgroundResource(R.drawable.bg_tab_inactive)
         tabNosotros.setBackgroundResource(R.drawable.bg_tab_inactive)
         panelNews.visibility = View.GONE
+        panelEntradas.visibility = View.GONE
+        panelReaccion.visibility = View.GONE
         panelTablas.visibility = View.GONE
-        panelPlaceholder.visibility = View.GONE
     }
 
     companion object {

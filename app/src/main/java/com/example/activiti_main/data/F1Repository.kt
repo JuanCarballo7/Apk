@@ -114,7 +114,19 @@ object F1Repository {
             code = d.code,
             championships = d.championships,
             wins = d.wins,
-            podiums = d.podiums
+            podiums = d.podiums,
+            birthDate = d.birthDate
         )
+    }
+
+    suspend fun getDriverById(id: Long): DriverApi? {
+        if (!SupabaseProvider.isConfigured || id <= 0L) return null
+        return runCatching {
+            SupabaseProvider.client.from("drivers")
+                .select(driverColumns) {
+                    filter { eq("id", id) }
+                }
+                .decodeSingle<DriverApi>()
+        }.getOrNull()
     }
 }

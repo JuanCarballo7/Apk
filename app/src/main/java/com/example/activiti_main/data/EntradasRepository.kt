@@ -1,6 +1,7 @@
 package com.example.activiti_main.data
 
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.functions.functions
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
@@ -37,6 +38,14 @@ object EntradasRepository {
             }
         }
         return SupabaseProvider.client.postgrest.rpc("crear_orden", params).decodeAs<OrdenCreada>()
+    }
+
+    /** Pide a la Edge Function que mande el comprobante (con el QR) al email de la cuenta. */
+    suspend fun enviarComprobantePorMail(ordenId: Long) {
+        SupabaseProvider.client.functions.invoke(
+            function = "enviar-comprobante",
+            body = buildJsonObject { put("orden_id", ordenId) }
+        )
     }
 
     private val columnasOrden = Columns.raw(

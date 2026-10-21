@@ -80,7 +80,8 @@ data class ClasificacionItem(
     val code: String = "",
     val championships: Int = 0,
     val wins: Int = 0,
-    val podiums: Int = 0
+    val podiums: Int = 0,
+    val birthDate: String? = null
 )
 
 @Serializable

@@ -29,8 +29,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<TextView>(R.id.tabTablas).setOnClickListener {
             abrirHub("tablas")
         }
-        findViewById<TextView>(R.id.tabVideos).setOnClickListener {
-            AppDialog.proximamente(this, "La sección de videos")
+        findViewById<TextView>(R.id.tabEntradas).setOnClickListener {
+            abrirHub("entradas")
+        }
+        findViewById<TextView>(R.id.tabReaccion).setOnClickListener {
+            abrirHub("reaccion")
         }
         findViewById<TextView>(R.id.tabNosotros).setOnClickListener {
             // Ya estamos en Nosotros
