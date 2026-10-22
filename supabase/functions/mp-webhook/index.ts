@@ -6,6 +6,7 @@
 // Por eso una notificación falsa no puede confirmar una orden.
 //
 // Secret necesario: MP_ACCESS_TOKEN (el mismo que usa mp-crear-pago).
+// URL que usa Mercado Pago: https://<proyecto>.supabase.co/functions/v1/mp-webhook
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 

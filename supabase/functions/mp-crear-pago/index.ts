@@ -4,8 +4,11 @@
 //   POST { "accion": "verificar", "orden_id": 123 }                     -> consulta a Mercado Pago si ya se pagó
 //   POST { "accion": "cancelar", "orden_id": 123 }                      -> abandona el pago y libera el stock
 //
+// Se publica con "Verify JWT" desactivado: la función valida al usuario por su cuenta con
+// auth.getUser() (funciona con las claves de firma nuevas y las legacy) y responde 401 si no hay sesión.
+//
 // Secret necesario (Dashboard > Edge Functions > Secrets):
-//   MP_ACCESS_TOKEN   Access Token de Mercado Pago (de prueba "TEST-..." o productivo "APP_USR-...")
+//   MP_ACCESS_TOKEN   Access Token de Mercado Pago (el de prueba y el productivo empiezan con "APP_USR-")
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -71,7 +74,8 @@ Deno.serve(async (req) => {
         unit_price: Number(l.precio_unitario),
         currency_id: "ARS",
       })),
-      payer: { email: user.email },
+      // Sin "payer": el comprador se identifica en el checkout. Con credenciales de prueba,
+      // precargar un email real hace fallar el pago ("una de las partes es de prueba").
       external_reference: String(orden.id),
       notification_url: `${url}/functions/v1/mp-webhook`,
       back_urls: { success: RETORNO_APP, failure: RETORNO_APP, pending: RETORNO_APP },
