@@ -122,6 +122,18 @@ data class UsuarioAdmin(
     val saldo: Double = 0.0
 )
 
+/** Respuesta de la Edge Function mp-crear-pago: orden reservada y link al checkout. */
+@Serializable
+data class PagoMpCreado(
+    @SerialName("orden_id") val ordenId: Long,
+    val codigo: String,
+    val total: Double,
+    @SerialName("init_point") val initPoint: String
+)
+
+@Serializable
+data class EstadoPagoMp(val estado: String = "pendiente")
+
 @Serializable
 data class OrdenCreada(
     val id: Long,

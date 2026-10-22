@@ -61,6 +61,8 @@ dependencies {
     implementation(platform("io.github.jan-tennert.supabase:bom:3.2.2"))
     implementation("io.github.jan-tennert.supabase:auth-kt")
     implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation("io.github.jan-tennert.supabase:functions-kt")
+    implementation("androidx.browser:browser:1.8.0")
     implementation("io.ktor:ktor-client-android:3.2.2")
     implementation(libs.coil)
     implementation(libs.zxing.core)

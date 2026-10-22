@@ -69,6 +69,20 @@
             android:exported="false"
             android:screenOrientation="landscape"
             android:windowSoftInputMode="adjustResize" />
+        <!-- Vuelta desde Mercado Pago: back_urls = jagp26://pago (ver mp-crear-pago) -->
+        <activity
+            android:name=".PagoMpActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.NoDisplay">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="pago"
+                    android:scheme="jagp26" />
+            </intent-filter>
+        </activity>
 
         <!-- Comparte el comprobante (PNG en cache/comprobantes) con otras apps -->
         <provider

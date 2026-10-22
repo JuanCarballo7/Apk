@@ -32,6 +32,7 @@ class HubActivity : AppCompatActivity() {
     private lateinit var panelTablas: View
     private lateinit var entradasUi: EntradasUi
     private lateinit var reaccionUi: ReaccionUi
+    private var tabActual = "news"
     private lateinit var txtSubtituloClasificacion: TextView
     private lateinit var txtActualizacionClasificacion: TextView
 
@@ -91,21 +92,27 @@ class HubActivity : AppCompatActivity() {
         findViewById<View>(R.id.bloqueEvento).setOnClickListener(irEntradas)
         findViewById<View>(R.id.btnEntradas).setOnClickListener(irEntradas)
         findViewById<View>(R.id.btnProfile).setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java))
+            MenuLateral.mostrar(this, tabActual) { seccion ->
+                if (seccion == "nosotros") abrirNosotros() else mostrarTab(seccion)
+            }
         }
 
         tabNews.setOnClickListener { mostrarTab("news") }
         tabEntradas.setOnClickListener { mostrarTab("entradas") }
         tabReaccion.setOnClickListener { mostrarTab("reaccion") }
         tabTablas.setOnClickListener { mostrarTab("tablas") }
-        tabNosotros.setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
-            finish()
-        }
+        tabNosotros.setOnClickListener { abrirNosotros() }
 
         val tabInicial = intent.getStringExtra(EXTRA_TAB) ?: "news"
         mostrarTab(tabInicial)
         cargarDesdeApi()
+    }
+
+    /** Vuelta desde Mercado Pago con el Hub ya abierto (PagoMpActivity usa SINGLE_TOP). */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        intent.getStringExtra(EXTRA_TAB)?.let(::mostrarTab)
     }
 
     override fun onResume() {
@@ -275,7 +282,13 @@ class HubActivity : AppCompatActivity() {
             summary = "El predio ocupa unas 190 hectáreas en el sur de la Ciudad. Además del circuito principal tiene varias configuraciones de trazado, lagos y espacios verdes que se usan para eventos durante todo el año.")
     )
 
+    private fun abrirNosotros() {
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
+    }
+
     private fun mostrarTab(tab: String) {
+        tabActual = tab
         resetTabs()
         when (tab) {
             "news" -> {

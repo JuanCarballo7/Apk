@@ -90,6 +90,8 @@ class EntradasUi(
     fun onResume() {
         actualizarCarrito()
         cargarSaldo()
+        // Al volver de Mercado Pago (deep link o botón atrás) se muestra cómo terminó el pago.
+        PagoMp.revisarPendiente(activity)
     }
 
     /** Saldo de la cuenta para mostrarlo en el carrito (la base igual lo valida al comprar). */
@@ -199,8 +201,8 @@ class EntradasUi(
             AppDialog.Tipo.INFO,
             "Tu carrito",
             textoTotalYSaldo(Carrito.total()),
-            botonPrincipal = "CONFIRMAR",
-            onPrincipal = ::confirmarCompra,
+            botonPrincipal = "PAGAR",
+            onPrincipal = ::elegirMedioDePago,
             botonSecundario = "SEGUIR",
             enlace = "Vaciar carrito",
             onEnlace = ::preguntarVaciar,
@@ -208,11 +210,50 @@ class EntradasUi(
         )
     }
 
+    private fun elegirMedioDePago() {
+        val total = Carrito.total()
+        val disponible = saldo
+        val alcanza = disponible == null || disponible >= total
+        AppDialog.mostrar(
+            activity,
+            AppDialog.Tipo.CONFIRMAR,
+            "¿Cómo querés pagar?",
+            "Total: ${formatearArs(total)}" +
+                (disponible?.let { "\nTu saldo: ${formatearArs(it)}" } ?: "") +
+                (if (alcanza) "" else "\nTu saldo no alcanza: podés pagar con Mercado Pago."),
+            botonPrincipal = "MERCADO PAGO",
+            onPrincipal = ::pagarConMercadoPago,
+            botonSecundario = "USAR MI SALDO",
+            onSecundario = ::confirmarCompra,
+            enlace = "Volver al carrito",
+            onEnlace = ::mostrarCarrito
+        )
+    }
+
+    private fun pagarConMercadoPago() {
+        val lineas = Carrito.lineas()
+        if (lineas.isEmpty() || comprando) return
+        comprando = true
+        PagoMp.iniciar(
+            activity,
+            lineas,
+            onReservada = {
+                // La orden pendiente ya tiene las entradas reservadas.
+                Carrito.vaciar()
+                actualizarCarrito()
+            },
+            onFin = {
+                comprando = false
+                cargarPrecios()
+            }
+        )
+    }
+
     private fun textoTotalYSaldo(total: Double): String {
         val disponible = saldo ?: return "Total: ${formatearArs(total)}"
         val base = "Total: ${formatearArs(total)}\nTu saldo: ${formatearArs(disponible)}"
         return if (disponible >= total) base
-        else "$base\n⚠ Te faltan ${formatearArs(total - disponible)}. Pedile a un administrador que te cargue saldo."
+        else "$base\nCon saldo te faltan ${formatearArs(total - disponible)}: podés pagar con Mercado Pago."
     }
 
     private fun vistaLineasCarrito(): View {

@@ -30,7 +30,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginStart="12dp"
-            android:contentDescription="Abrir perfil"
+            android:contentDescription="Abrir menú"
             android:src="@drawable/ic_menu" />
 
         <View

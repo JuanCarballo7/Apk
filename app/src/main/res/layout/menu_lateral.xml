@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#111116"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/menuCabecera"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#16161D"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="18dp">
+
+        <ImageView
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:contentDescription="@string/app_name"
+            android:scaleType="fitCenter"
+            android:src="@drawable/logo_ja" />
+
+        <TextView
+            android:id="@+id/txtMenuNombre"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="Mi cuenta"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/txtMenuEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="#8A8A95"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/txtMenuSaldo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_badge_outline"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
+            android:text="Saldo: …"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none">
+
+        <!-- Las opciones se agregan desde MenuLateral -->
+        <LinearLayout
+            android:id="@+id/menuOpciones"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="8dp" />
+    </ScrollView>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#2A2A33" />
+
+    <TextView
+        android:id="@+id/btnMenuCerrarSesion"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="22dp"
+        android:text="🚪   Cerrar sesión"
+        android:textColor="#FF6B6B"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+</LinearLayout>

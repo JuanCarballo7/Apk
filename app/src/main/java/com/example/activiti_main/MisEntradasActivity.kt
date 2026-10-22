@@ -79,7 +79,8 @@ private class OrdenesAdapter(
         val cantidad = o.cantidadEntradas
         holder.codigo.text = o.codigo
         holder.detalle.text =
-            "${if (cantidad == 1) "1 entrada" else "$cantidad entradas"} · ${formatearFecha(o.createdAt)}"
+            "${if (cantidad == 1) "1 entrada" else "$cantidad entradas"} · ${formatearFecha(o.createdAt)}" +
+                (if (o.estado == "confirmada") "" else " · ${estadoLegible(o.estado)}")
         holder.total.text = formatearArs(o.total)
         holder.fila.setOnClickListener { onClick(o) }
     }

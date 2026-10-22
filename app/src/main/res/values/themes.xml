@@ -6,4 +6,10 @@
     </style>
 
     <style name="Theme.Activiti_main" parent="Base.Theme.Activiti_main" />
+
+    <!-- Menú lateral: entra y sale deslizándose desde la izquierda. -->
+    <style name="MenuLateralAnimacion">
+        <item name="android:windowEnterAnimation">@anim/menu_lateral_entrar</item>
+        <item name="android:windowExitAnimation">@anim/menu_lateral_salir</item>
+    </style>
 </resources>

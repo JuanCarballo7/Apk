@@ -82,12 +82,21 @@ class ComprobanteActivity : AppCompatActivity() {
     }
 
     private fun mostrar(o: OrdenApi, comprador: String, email: String) {
-        val tamanoQr = (210 * resources.displayMetrics.density).toInt()
-        findViewById<ImageView>(R.id.imgComprobanteQr)
-            .setImageBitmap(QrHelper.generar(QrHelper.contenidoOrden(o.codigo, o.id), tamanoQr))
+        // El QR solo existe para compras pagas: una orden pendiente o cancelada no entra al autódromo.
+        val pagada = o.estado == "confirmada"
+        val imgQr = findViewById<ImageView>(R.id.imgComprobanteQr)
+        if (pagada) {
+            val tamanoQr = (210 * resources.displayMetrics.density).toInt()
+            imgQr.setImageBitmap(QrHelper.generar(QrHelper.contenidoOrden(o.codigo, o.id), tamanoQr))
+            imgQr.visibility = View.VISIBLE
+        } else {
+            imgQr.visibility = View.GONE
+        }
+        findViewById<View>(R.id.btnCompartirComprobante).visibility = if (pagada) View.VISIBLE else View.GONE
 
-        findViewById<TextView>(R.id.txtComprobanteCodigo).text = o.codigo
-        findViewById<TextView>(R.id.txtComprobanteEstado).text = o.estado.uppercase()
+        findViewById<TextView>(R.id.txtComprobanteCodigo).text =
+            if (pagada) o.codigo else "${o.codigo}\n${if (o.estado == "pendiente") "Esperando el pago" else "Sin QR: compra cancelada"}"
+        findViewById<TextView>(R.id.txtComprobanteEstado).text = estadoLegible(o.estado)
         findViewById<TextView>(R.id.txtComprobanteComprador).text = comprador.ifBlank { "-" }
         findViewById<TextView>(R.id.txtComprobanteEmail).text = email.ifBlank { "-" }
         findViewById<TextView>(R.id.txtComprobanteFecha).text = formatearFecha(o.createdAt)
@@ -152,6 +161,14 @@ class ComprobanteActivity : AppCompatActivity() {
             }
         }
     }
+}
+
+/** Estado de una orden en palabras para el usuario. */
+internal fun estadoLegible(estado: String): String = when (estado) {
+    "confirmada" -> "CONFIRMADA"
+    "pendiente" -> "PENDIENTE DE PAGO"
+    "cancelada" -> "CANCELADA"
+    else -> estado.uppercase()
 }
 
 /** "2026-10-19T06:13:55.123+00:00" (UTC de Supabase) → "19/10/2026 03:13" en la hora del teléfono. */

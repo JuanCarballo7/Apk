@@ -20,7 +20,9 @@ class MainActivity : AppCompatActivity() {
 
         comprobarAcceso()
         findViewById<android.view.View>(R.id.btnProfile).setOnClickListener {
-            startActivity(Intent(this, ProfileActivity::class.java))
+            MenuLateral.mostrar(this, actual = "nosotros") { seccion ->
+                if (seccion != "nosotros") abrirHub(seccion)
+            }
         }
 
         findViewById<TextView>(R.id.tabNews).setOnClickListener {

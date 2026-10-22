@@ -55,7 +55,9 @@ internal fun Throwable.mensajeAmigable(): String {
         raw.contains("NO_DISPONIBLE") ->
             "Una de las entradas de tu carrito ya no está a la venta."
         raw.contains("SALDO_INSUFICIENTE") ->
-            "No tenés saldo suficiente. Pedile a un administrador que te cargue saldo."
+            "No tenés saldo suficiente. Pagá con Mercado Pago o pedile a un administrador que te cargue saldo."
+        raw.contains("MP_NO_CONFIGURADO") || raw.contains("MP_NO_DISPONIBLE") ->
+            "Mercado Pago no está disponible en este momento. Probá de nuevo en unos minutos o pagá con saldo."
         raw.contains("MONTO_INVALIDO") ->
             "Ingresá un monto válido."
         raw.contains("ROL_PROPIO") ->

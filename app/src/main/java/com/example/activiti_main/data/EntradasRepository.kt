@@ -1,10 +1,13 @@
 package com.example.activiti_main.data
 
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.functions.functions
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Columns
 import io.github.jan.supabase.postgrest.query.Order
+import io.ktor.client.statement.bodyAsText
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.addJsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -37,6 +40,48 @@ object EntradasRepository {
             }
         }
         return SupabaseProvider.client.postgrest.rpc("crear_orden", params).decodeAs<OrdenCreada>()
+    }
+
+    // ---------- Mercado Pago (Edge Function mp-crear-pago) ----------
+
+    private val json = Json { ignoreUnknownKeys = true }
+
+    /** Reserva el stock en una orden pendiente y devuelve el link de Checkout Pro. */
+    suspend fun crearPagoMp(lineas: List<Pair<Entrada, Int>>): PagoMpCreado {
+        val respuesta = SupabaseProvider.client.functions.invoke(
+            function = "mp-crear-pago",
+            body = buildJsonObject {
+                putJsonArray("items") {
+                    lineas.forEach { (entrada, cantidad) ->
+                        addJsonObject {
+                            put("ticket_id", entrada.id)
+                            put("cantidad", cantidad)
+                        }
+                    }
+                }
+            }
+        )
+        return json.decodeFromString(respuesta.bodyAsText())
+    }
+
+    /** Pregunta a Mercado Pago si la orden ya se pagó; devuelve "pendiente", "confirmada" o "cancelada". */
+    suspend fun verificarPagoMp(ordenId: Long): String {
+        val respuesta = SupabaseProvider.client.functions.invoke(
+            function = "mp-crear-pago",
+            body = buildJsonObject {
+                put("accion", "verificar")
+                put("orden_id", ordenId)
+            }
+        )
+        return json.decodeFromString<EstadoPagoMp>(respuesta.bodyAsText()).estado
+    }
+
+    /** Abandona un pago de Mercado Pago que no se hizo: la orden se cancela y se libera el stock. */
+    suspend fun cancelarPagoMp(ordenId: Long) {
+        SupabaseProvider.client.postgrest.rpc(
+            "cancelar_mi_orden_mp",
+            buildJsonObject { put("p_order_id", ordenId) }
+        )
     }
 
     private val columnasOrden = Columns.raw(
